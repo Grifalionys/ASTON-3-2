@@ -2,4 +2,5 @@
     <string name="app_name">Load Image</string>
     <string name="error">Введен неправильный URL</string>
     <string name="info_hint">Введите URL картинки</string>
+    <string name="get">Get</string>
 </resources>
