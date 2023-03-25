@@ -35,6 +35,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private EditText edSearch;
@@ -51,25 +53,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickSearch(View view) {
-        imageView.setVisibility(View.VISIBLE);
         new ImageDownloader().execute(edSearch.getText().toString());
     }
     private class ImageDownloader extends AsyncTask<String,Void,Bitmap>{
-        HttpURLConnection httpURLConnection;
+        HttpsURLConnection httpsURLConnection;
         @Override
         protected Bitmap doInBackground(String... strings) {
             try {
                 URL url  = new URL(strings[0]);
-                httpURLConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+                httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                InputStream inputStream = new BufferedInputStream(httpsURLConnection.getInputStream());
                 Bitmap temp = BitmapFactory.decodeStream(inputStream);
                 return temp;
-            } catch (MalformedURLException e){
+            } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                httpURLConnection.disconnect();
             }
             return null;
         }
@@ -77,10 +76,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
-            if(bitmap != null){
+            if(bitmap != null) {
+                imageView.setVisibility(View.VISIBLE);
                 imageView.setImageBitmap(bitmap);
-                Toast.makeText(getApplicationContext(),R.string.successful,Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), R.string.successful, Toast.LENGTH_SHORT).show();
             } else {
+                imageView.setVisibility(View.GONE);
                 Toast.makeText(getApplicationContext(),R.string.error,Toast.LENGTH_SHORT).show();
             }
         }
