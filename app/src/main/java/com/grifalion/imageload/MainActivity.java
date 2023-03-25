@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClickSearch(View view) {
+        imageView.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(edSearch.getText().toString())
                     .listener(new RequestListener<Drawable>() {
