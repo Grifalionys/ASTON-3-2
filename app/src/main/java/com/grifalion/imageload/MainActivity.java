@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,6 +28,11 @@ import com.bumptech.glide.load.model.stream.MediaStoreImageThumbLoader;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,20 +52,42 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickSearch(View view) {
         imageView.setVisibility(View.VISIBLE);
-            Glide.with(this)
-                    .load(edSearch.getText().toString())
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            Toast.makeText(getApplicationContext(), R.string.error, Toast.LENGTH_LONG).show();
-                            return false;
-                        }
+        new ImageDownloader().execute(edSearch.getText().toString());
+    }
+    private class ImageDownloader extends AsyncTask<String,Void,Bitmap>{
+        HttpURLConnection httpURLConnection;
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            try {
+                URL url  = new URL(strings[0]);
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+                InputStream inputStream = new BufferedInputStream(httpURLConnection.getInputStream());
+                Bitmap temp = BitmapFactory.decodeStream(inputStream);
+                return temp;
+            } catch (MalformedURLException e){
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                httpURLConnection.disconnect();
+            }
+            return null;
+        }
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            return false;
-                        }
-                    })
-                    .into(imageView);
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            if(bitmap != null){
+                imageView.setImageBitmap(bitmap);
+                Toast.makeText(getApplicationContext(),R.string.successful,Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(),R.string.error,Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
     }
 }
